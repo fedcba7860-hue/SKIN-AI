@@ -1,203 +1,842 @@
-// Skin Decode server - Node 22+ (uses built-in SQLite, no native npm database package)
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const { DatabaseSync } = require('node:sqlite');
+// ============================================================
+// SKIN DECODE - COMPLETE SCRIPT.JS
+// ============================================================
 
-const PORT = Number(process.env.PORT || 3000);
-const dbPath = path.join(__dirname, 'skin-decode.db');
-const db = new DatabaseSync(dbPath);
 
-db.exec(`PRAGMA foreign_keys = ON;`);
-db.exec(`
-CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL DEFAULT '',
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-CREATE TABLE IF NOT EXISTS skin_scans (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
-  skin_type TEXT,
-  concern TEXT,
-  sensitivity TEXT,
-  ingredients_json TEXT NOT NULL DEFAULT '[]',
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-CREATE TABLE IF NOT EXISTS saved_ingredients (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
-  ingredient_name TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(user_id, ingredient_name),
-  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-CREATE TABLE IF NOT EXISTS saved_routines (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
-  routine_name TEXT,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-`);
+// ============================================================
+// PRODUCT DATABASE
+// ============================================================
 
-function columns(table) {
-  return db.prepare(`PRAGMA table_info(${table})`).all().map(x => x.name);
+const BRANDS = [
+  ["Korean","COSRX","Low pH Good Morning Gel Cleanser","Cleanser","acne oily blackhead","Gentle gel cleanser with tea tree oil and BHA."],
+  ["Korean","COSRX","BHA Blackhead Power Liquid","Treatment","blackhead acne oily","Leave-on exfoliant with betaine salicylate for clogged pores."],
+  ["Korean","COSRX","Advanced Snail 96 Mucin Power Essence","Essence","dry redness dull","Lightweight hydrating essence that leaves skin bouncy."],
+
+  ["Korean","Beauty of Joseon","Relief Sun: Rice + Probiotics SPF50+","Sunscreen","pigment dull aging dry redness","Comfortable, non-greasy daily sunscreen."],
+  ["Korean","Beauty of Joseon","Glow Serum: Propolis + Niacinamide","Serum","acne oily dull","Soothing and tone-evening, good for breakout-prone skin."],
+  ["Korean","Beauty of Joseon","Revive Serum: Ginseng + Snail Mucin","Serum","aging dry","Hydrating serum for a firmer, smoother look."],
+
+  ["Korean","Anua","Heartleaf 77% Soothing Toner","Toner","redness acne","Calming toner for irritated or reactive skin."],
+  ["Korean","Skin1004","Madagascar Centella Ampoule","Serum","redness acne dry","Centella ampoule that soothes and supports the barrier."],
+  ["Korean","Laneige","Water Bank Blue Hyaluronic Cream","Moisturiser","dry","Hyaluronic acid cream for dehydrated skin."],
+  ["Korean","Isntree","Hyaluronic Acid Toner","Toner","dry dull","Light layered hydration, suits sensitive skin."],
+  ["Korean","Some By Mi","AHA BHA PHA 30 Days Miracle Toner","Toner","blackhead acne dull","Mild exfoliating toner, use a few nights a week."],
+  ["Korean","Round Lab","1025 Dokdo Toner","Toner","dry redness dull","Simple, gentle toner with mineral-rich water."],
+
+  ["Indian","Minimalist","10% Niacinamide Serum","Serum","oily acne pigment blackhead","Targets oil, pores and uneven tone."],
+  ["Indian","Minimalist","2% Salicylic Acid Serum","Serum","acne blackhead oily","Unclogs pores. Start a few nights a week."],
+  ["Indian","Minimalist","10% Vitamin C Face Serum","Serum","pigment dull","Morning antioxidant for dark spots and dullness."],
+  ["Indian","Minimalist","0.3% Retinol Serum","Serum","aging acne","Beginner-friendly retinol, night use only."],
+  ["Indian","Minimalist","Light Fluid SPF 50 Sunscreen","Sunscreen","oily acne pigment","Light texture for oily skin."],
+
+  ["Indian","The Derma Co","2% Salicylic Acid Face Wash","Cleanser","acne blackhead oily","Daily cleanser for breakouts and clogged pores."],
+  ["Indian","The Derma Co","1% Hyaluronic Sunscreen Aqua Gel SPF 50","Sunscreen","dry dull oily","Hydrating gel sunscreen."],
+  ["Indian","Dot & Key","Vitamin C + E Super Bright Moisturizer","Moisturiser","pigment dull","Brightening moisturiser for everyday glow."],
+  ["Indian","Plum","Green Tea Pore Cleansing Face Wash","Cleanser","oily acne","Mild face wash for oily, acne-prone skin."],
+  ["Indian","Re'equil","Ceramide & Hyaluronic Acid Moisturizing Cream","Moisturiser","dry redness","Barrier-support cream for dry or sensitive skin."],
+  ["Indian","Dr. Sheth's","Ceramide & Vitamin C Oil-Free Moisturizer","Moisturiser","oily pigment","Oil-free hydration with brightening."],
+  ["Indian","Aqualogica","Glow+ Dewy Sunscreen SPF 50","Sunscreen","dull dry","Dewy-finish sunscreen for normal to dry skin."]
+].map(([origin, brand, name, type, concerns, note]) => ({
+  origin,
+  brand,
+  name,
+  type,
+  c: concerns.split(" "),
+  note
+}));
+
+
+// ============================================================
+// HTML ESCAPE
+// ============================================================
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
 }
-function addColumn(table, name, definition) {
-  if (!columns(table).includes(name)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${definition}`);
-}
-// Safe migration from the original assignment database.
-addColumn('users', 'password_hash', "TEXT NOT NULL DEFAULT ''");
-addColumn('users', 'created_at', 'TEXT');
-db.exec("UPDATE users SET created_at=CURRENT_TIMESTAMP WHERE created_at IS NULL OR created_at=''");
-addColumn('skin_scans', 'ingredients_json', "TEXT NOT NULL DEFAULT '[]'");
-addColumn('skin_scans', 'created_at', 'TEXT');
-db.exec("UPDATE skin_scans SET created_at=CURRENT_TIMESTAMP WHERE created_at IS NULL OR created_at=''");
 
-function loadEnv() {
-  try {
-    const p = path.join(__dirname, '.env');
-    fs.readFileSync(p, 'utf8').split(/\r?\n/).forEach(line => {
-      const m = line.match(/^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/);
-      if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+
+// ============================================================
+// CREATE SAFE ID
+// ============================================================
+
+function slug(product) {
+
+  return (
+    product.brand + "-" + product.name
+  )
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+}
+
+
+// ============================================================
+// PRODUCT ILLUSTRATION
+// ============================================================
+
+function productThumb(product) {
+
+  const type = product.type || "Product";
+
+  const labels = {
+
+    Cleanser: "CLEANSER",
+    Toner: "TONER",
+    Serum: "SERUM",
+    Essence: "ESSENCE",
+    Moisturiser: "MOISTURISER",
+    Sunscreen: "SPF 50",
+    Treatment: "TREATMENT"
+
+  };
+
+  const label = labels[type] || "SKIN CARE";
+
+  const id = slug(product);
+
+  return `
+
+    <div class="product-art product-illustration">
+
+      <svg
+        class="product-svg"
+        viewBox="0 0 260 260"
+        xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        aria-label="${escapeHtml(product.brand)} ${escapeHtml(product.name)}"
+      >
+
+        <defs>
+
+          <linearGradient
+            id="gradient-${id}"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="1"
+          >
+
+            <stop
+              offset="0%"
+              stop-color="#ffffff"
+            />
+
+            <stop
+              offset="100%"
+              stop-color="#f2d5df"
+            />
+
+          </linearGradient>
+
+        </defs>
+
+
+        <!-- Background circle -->
+
+        <circle
+          cx="130"
+          cy="130"
+          r="112"
+          fill="#fbf1f4"
+        />
+
+
+        <!-- Product shadow -->
+
+        <ellipse
+          cx="130"
+          cy="221"
+          rx="72"
+          ry="11"
+          fill="#dec4cc"
+        />
+
+
+        <!-- Main bottle -->
+
+        <rect
+          x="83"
+          y="70"
+          width="94"
+          height="145"
+          rx="19"
+          fill="url(#gradient-${id})"
+          stroke="#7d2945"
+          stroke-width="3"
+        />
+
+
+        <!-- Bottle cap -->
+
+        <rect
+          x="99"
+          y="47"
+          width="62"
+          height="28"
+          rx="7"
+          fill="#ffffff"
+          stroke="#7d2945"
+          stroke-width="3"
+        />
+
+
+        <!-- Pump -->
+
+        <rect
+          x="119"
+          y="29"
+          width="22"
+          height="22"
+          rx="5"
+          fill="#7d2945"
+        />
+
+
+        <!-- Product label -->
+
+        <rect
+          x="98"
+          y="105"
+          width="64"
+          height="65"
+          rx="8"
+          fill="#ffffff"
+        />
+
+
+        <!-- Brand name -->
+
+        <text
+          x="130"
+          y="127"
+          text-anchor="middle"
+          font-family="Arial, sans-serif"
+          font-size="10"
+          font-weight="700"
+          fill="#7d2945"
+        >
+          ${escapeHtml(product.brand)}
+        </text>
+
+
+        <!-- Product type -->
+
+        <text
+          x="130"
+          y="147"
+          text-anchor="middle"
+          font-family="Arial, sans-serif"
+          font-size="9"
+          font-weight="600"
+          fill="#7d2945"
+        >
+          ${escapeHtml(label)}
+        </text>
+
+
+        <!-- Decorative line -->
+
+        <line
+          x1="112"
+          y1="156"
+          x2="148"
+          y2="156"
+          stroke="#c98ca0"
+          stroke-width="2"
+        />
+
+      </svg>
+
+    </div>
+
+  `;
+
+}
+
+
+// ============================================================
+// PRODUCT CARD
+// ============================================================
+
+function createProductCard(product) {
+
+  return `
+
+    <article class="bcard">
+
+      <div class="bart">
+
+        ${productThumb(product)}
+
+      </div>
+
+
+      <div class="bbody">
+
+        <div class="eyebrow">
+          ${escapeHtml(product.origin)}
+        </div>
+
+
+        <h3>
+          ${escapeHtml(product.brand)}
+        </h3>
+
+
+        <h4>
+          ${escapeHtml(product.name)}
+        </h4>
+
+
+        <span class="pill">
+          ${escapeHtml(product.type)}
+        </span>
+
+
+        <p>
+          ${escapeHtml(product.note)}
+        </p>
+
+      </div>
+
+    </article>
+
+  `;
+
+}
+
+
+// ============================================================
+// FILTER PRODUCTS
+// ============================================================
+
+function getFilteredProducts() {
+
+  const searchInput =
+    document.querySelector("#brandSearch");
+
+  const originSelect =
+    document.querySelector("#brandOrigin");
+
+  const concernSelect =
+    document.querySelector("#brandConcern");
+
+
+  const search =
+    searchInput
+      ? searchInput.value.toLowerCase().trim()
+      : "";
+
+
+  const origin =
+    originSelect
+      ? originSelect.value
+      : "All";
+
+
+  const concern =
+    concernSelect
+      ? concernSelect.value
+      : "All";
+
+
+  return BRANDS.filter(product => {
+
+    const searchableText = [
+
+      product.origin,
+      product.brand,
+      product.name,
+      product.type,
+      product.note,
+      ...(product.c || [])
+
+    ]
+      .join(" ")
+      .toLowerCase();
+
+
+    const matchesSearch =
+      search === "" ||
+      searchableText.includes(search);
+
+
+    const matchesOrigin =
+      origin === "All" ||
+      product.origin === origin;
+
+
+    const matchesConcern =
+      concern === "All" ||
+      product.c.includes(concern);
+
+
+    return (
+      matchesSearch &&
+      matchesOrigin &&
+      matchesConcern
+    );
+
+  });
+
+}
+
+
+// ============================================================
+// RENDER BRANDS
+// ============================================================
+
+function renderBrands() {
+
+  const grid =
+    document.querySelector("#brandGrid");
+
+
+  if (!grid) {
+    return;
+  }
+
+
+  const products =
+    getFilteredProducts();
+
+
+  if (products.length === 0) {
+
+    grid.innerHTML = `
+
+      <div
+        style="
+          grid-column:1/-1;
+          text-align:center;
+          padding:60px 20px;
+        "
+      >
+
+        <h3>No products found</h3>
+
+        <p>
+          Try another search or filter.
+        </p>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  grid.innerHTML =
+    products
+      .map(createProductCard)
+      .join("");
+
+}
+
+
+// ============================================================
+// TYPE CHIPS
+// ============================================================
+
+function renderTypeChips() {
+
+  const container =
+    document.querySelector("#typeChips");
+
+
+  if (!container) {
+    return;
+  }
+
+
+  const types = [
+    "All",
+    "Cleanser",
+    "Toner",
+    "Serum",
+    "Essence",
+    "Moisturiser",
+    "Sunscreen",
+    "Treatment"
+  ];
+
+
+  container.innerHTML =
+    types.map(type => `
+
+      <button
+        type="button"
+        class="type-chip"
+        data-type="${type}"
+      >
+        ${type}
+      </button>
+
+    `).join("");
+
+
+  const buttons =
+    container.querySelectorAll(".type-chip");
+
+
+  buttons.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+      buttons.forEach(btn =>
+        btn.classList.remove("active")
+      );
+
+
+      button.classList.add("active");
+
+
+      const selected =
+        button.dataset.type;
+
+
+      const grid =
+        document.querySelector("#brandGrid");
+
+
+      if (!grid) {
+        return;
+      }
+
+
+      let products =
+        getFilteredProducts();
+
+
+      if (selected !== "All") {
+
+        products =
+          products.filter(
+            product =>
+              product.type === selected
+          );
+
+      }
+
+
+      grid.innerHTML =
+        products.length
+          ? products.map(createProductCard).join("")
+          : `
+
+            <div
+              style="
+                grid-column:1/-1;
+                text-align:center;
+                padding:60px 20px;
+              "
+            >
+
+              <h3>No products found</h3>
+
+              <p>
+                Try another product type.
+              </p>
+
+            </div>
+
+          `;
+
     });
-  } catch {}
-}
-loadEnv();
-const KEY = process.env.ANTHROPIC_API_KEY || '';
-const MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-5-5';
 
-const sessions = new Map();
-const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
-function token() { return crypto.randomBytes(32).toString('hex'); }
-function hashPassword(password) {
-  const salt = crypto.randomBytes(16);
-  const hash = crypto.scryptSync(password, salt, 64);
-  return `${salt.toString('hex')}:${hash.toString('hex')}`;
+  });
+
+
+  const allButton =
+    container.querySelector(
+      '[data-type="All"]'
+    );
+
+
+  if (allButton) {
+    allButton.classList.add("active");
+  }
+
 }
-function verifyPassword(password, stored) {
-  if (!stored || !stored.includes(':')) return false;
-  const [saltHex, hashHex] = stored.split(':');
+
+
+// ============================================================
+// SEARCH
+// ============================================================
+
+function searchProducts(query) {
+
+  const q =
+    String(query || "")
+      .toLowerCase()
+      .trim();
+
+
+  if (!q) {
+    return BRANDS;
+  }
+
+
+  return BRANDS.filter(product => {
+
+    const text = [
+
+      product.origin,
+      product.brand,
+      product.name,
+      product.type,
+      product.note,
+      ...(product.c || [])
+
+    ]
+      .join(" ")
+      .toLowerCase();
+
+
+    return text.includes(q);
+
+  });
+
+}
+
+
+// ============================================================
+// NAV USER
+// ============================================================
+
+async function loadNavUser() {
+
+  const navName =
+    document.querySelector("#navName");
+
+
+  if (!navName) {
+    return;
+  }
+
+
   try {
-    const actual = crypto.scryptSync(password, Buffer.from(saltHex, 'hex'), 64);
-    const expected = Buffer.from(hashHex, 'hex');
-    return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
-  } catch { return false; }
-}
-function cookieValue(req, name) {
-  const raw = req.headers.cookie || '';
-  const part = raw.split(';').map(x => x.trim()).find(x => x.startsWith(name + '='));
-  return part ? decodeURIComponent(part.slice(name.length + 1)) : '';
-}
-function currentUser(req) {
-  const t = cookieValue(req, 'sd_session');
-  if (!t) return null;
-  const s = sessions.get(t);
-  if (!s || s.expires < Date.now()) { sessions.delete(t); return null; }
-  const user = db.prepare('SELECT id,name,email,created_at FROM users WHERE id=?').get(s.userId);
-  return user || null;
-}
-function setSession(res, userId) {
-  const t = token();
-  sessions.set(t, { userId, expires: Date.now() + SESSION_MS });
-  res.setHeader('Set-Cookie', `sd_session=${encodeURIComponent(t)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${Math.floor(SESSION_MS/1000)}`);
-}
-function clearSession(req, res) {
-  const t = cookieValue(req, 'sd_session');
-  if (t) sessions.delete(t);
-  res.setHeader('Set-Cookie', 'sd_session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0');
+
+    const response =
+      await fetch("/api/me", {
+        credentials: "include"
+      });
+
+
+    if (!response.ok) {
+      return;
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if (data && data.user) {
+
+      navName.textContent =
+        data.user.name || "";
+
+    }
+
+  } catch (error) {
+
+    console.log(
+      "Could not load user:",
+      error
+    );
+
+  }
+
 }
 
-function send(res, status, data, extraHeaders={}) {
-  res.writeHead(status, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...extraHeaders});
-  res.end(JSON.stringify(data));
-}
-async function body(req, limit=50000) {
-  let raw='';
-  for await (const chunk of req) { raw += chunk; if (raw.length > limit) throw new Error('too_large'); }
-  try { return JSON.parse(raw || '{}'); } catch { throw new Error('bad_json'); }
-}
-function requireUser(req,res) {
-  const u = currentUser(req);
-  if (!u) { send(res,401,{error:'unauthorized'}); return null; }
-  return u;
-}
 
-const SYSTEM = `You are Skin AI, the skincare assistant on the Skin Decode website. Tagline: "Because your skin deserves better." Help with product suggestions, morning/night routines and skincare ingredients. Be warm, clear and concise. Give educational guidance, never diagnose, recommend patch testing, sunscreen in the morning, and dermatologist care for severe/persistent problems.`;
-const hits = new Map();
-function limited(ip) {
-  const now=Date.now(), arr=(hits.get(ip)||[]).filter(t=>now-t<60000); arr.push(now); hits.set(ip,arr); return arr.length>20;
-}
-async function chat(req,res) {
-  if (!KEY) return send(res,503,{error:'no_key'});
-  if (limited(req.socket.remoteAddress||'unknown')) return send(res,429,{error:'slow_down'});
-  let data; try { data=await body(req,20000); } catch(e) { return send(res,e.message==='too_large'?413:400,{error:e.message}); }
-  let messages=Array.isArray(data.messages)?data.messages:[];
-  messages=messages.filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string'&&m.content.trim()).slice(-12).map(m=>({role:m.role,content:m.content.slice(0,1500)}));
-  while(messages.length&&messages[0].role!=='user')messages.shift();
-  if(!messages.length||messages[messages.length-1].role!=='user')return send(res,400,{error:'no_message'});
-  const profile=data.profile&&typeof data.profile==='object'?data.profile:null;
-  const system=SYSTEM+(profile?`\nUser profile: ${JSON.stringify(profile).slice(0,2000)}`:'');
+// ============================================================
+// LOGOUT
+// ============================================================
+
+async function logout() {
+
   try {
-    const response=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:MODEL,max_tokens:800,system,messages})});
-    const json=await response.json();
-    if(!response.ok)return send(res,502,{error:'upstream'});
-    const reply=(json.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n').trim();
-    return send(res,200,{reply});
-  } catch { return send(res,502,{error:'upstream'}); }
+
+    await fetch("/api/logout", {
+      method: "POST",
+      credentials: "include"
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+
+  window.location.href =
+    "index.html";
+
 }
 
-const TYPES={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon'};
-function serve(req,res){
-  let p=decodeURIComponent(req.url.split('?')[0]); if(p==='/')p='/index.html';
-  const file=path.resolve(__dirname,'.'+path.normalize(p));
-  if(!file.startsWith(path.resolve(__dirname)+path.sep))return send(res,404,{error:'not_found'});
-  const type=TYPES[path.extname(file).toLowerCase()]; if(!type)return send(res,404,{error:'not_found'});
-  fs.readFile(file,(err,data)=>{if(err)return send(res,404,{error:'not_found'});res.writeHead(200,{'Content-Type':type,'X-Content-Type-Options':'nosniff'});res.end(data);});
-}
 
-const server=http.createServer(async (req,res)=>{
-  try {
-    if(req.method==='POST'&&req.url==='/api/auth/signup'){
-      const d=await body(req,10000); const name=String(d.name||'').trim().slice(0,80),email=String(d.email||'').trim().toLowerCase().slice(0,160),password=String(d.password||'');
-      if(name.length<2||!email.includes('@')||password.length<6)return send(res,400,{error:'invalid_input'});
-      if(db.prepare('SELECT id FROM users WHERE email=?').get(email))return send(res,409,{error:'email_exists'});
-      const r=db.prepare('INSERT INTO users(name,email,password_hash) VALUES(?,?,?)').run(name,email,hashPassword(password)); setSession(res,Number(r.lastInsertRowid)); return send(res,201,{user:{id:Number(r.lastInsertRowid),name,email}});
-    }
-    if(req.method==='POST'&&req.url==='/api/auth/login'){
-      const d=await body(req,10000); const email=String(d.email||'').trim().toLowerCase(),password=String(d.password||''); const u=db.prepare('SELECT * FROM users WHERE email=?').get(email);
-      if(!u||!verifyPassword(password,u.password_hash))return send(res,401,{error:'invalid_credentials'}); setSession(res,u.id); return send(res,200,{user:{id:u.id,name:u.name,email:u.email}});
-    }
-    if(req.method==='POST'&&req.url==='/api/auth/logout'){clearSession(req,res);return send(res,200,{ok:true});}
-    if(req.method==='GET'&&req.url==='/api/auth/me'){
-      const u=currentUser(req); if(!u)return send(res,200,{user:null,profile:null,saved:[]});
-      const scan=db.prepare('SELECT skin_type AS type, concern, sensitivity AS sens, ingredients_json AS ingredients FROM skin_scans WHERE user_id=? ORDER BY id DESC LIMIT 1').get(u.id);
-      const saved=db.prepare('SELECT ingredient_name FROM saved_ingredients WHERE user_id=? ORDER BY id DESC').all(u.id).map(x=>x.ingredient_name);
-      return send(res,200,{user:u,profile:scan?{...scan,ingredients:JSON.parse(scan.ingredients||'[]')}:null,saved});
-    }
-    if(req.method==='POST'&&req.url==='/api/scan'){
-      const u=requireUser(req,res);if(!u)return;const d=await body(req,10000);const ingredients=Array.isArray(d.ingredients)?d.ingredients.slice(0,20).map(String):[];
-      db.prepare('INSERT INTO skin_scans(user_id,skin_type,concern,sensitivity,ingredients_json) VALUES(?,?,?,?,?)').run(u.id,String(d.type||''),String(d.concern||''),String(d.sens||''),JSON.stringify(ingredients));return send(res,201,{ok:true});
-    }
-    if(req.method==='POST'&&req.url==='/api/saved/toggle'){
-      const u=requireUser(req,res);if(!u)return;const d=await body(req,5000),name=String(d.name||'').trim().slice(0,120);if(!name)return send(res,400,{error:'invalid_input'});
-      const found=db.prepare('SELECT id FROM saved_ingredients WHERE user_id=? AND ingredient_name=?').get(u.id,name);if(found)db.prepare('DELETE FROM saved_ingredients WHERE id=?').run(found.id);else db.prepare('INSERT INTO saved_ingredients(user_id,ingredient_name) VALUES(?,?)').run(u.id,name);return send(res,200,{saved:!found});
-    }
-    if(req.method==='GET'&&req.url==='/api/database'){
-      const u=requireUser(req,res);if(!u)return;return send(res,200,{users:db.prepare('SELECT id,name,email,created_at FROM users WHERE id=?').all(u.id),skin_scans:db.prepare('SELECT * FROM skin_scans WHERE user_id=?').all(u.id),saved_ingredients:db.prepare('SELECT * FROM saved_ingredients WHERE user_id=?').all(u.id),saved_routines:db.prepare('SELECT * FROM saved_routines WHERE user_id=?').all(u.id)});
-    }
-    if(req.method==='GET'&&req.url==='/api/status')return send(res,200,{ai:!!KEY,database:true});
-    if(req.method==='POST'&&req.url==='/api/chat')return await chat(req,res);
-    if(req.method==='GET')return serve(req,res);
-    return send(res,405,{error:'method'});
-  } catch(e) { console.error(e); return send(res,500,{error:'server_error'}); }
-});
+// ============================================================
+// INITIALIZATION
+// ============================================================
 
-server.listen(PORT,()=>console.log(`Skin Decode running on http://localhost:${PORT} | SQLite: built-in | AI: ${KEY?'on':'fallback'}`));
-process.on('SIGINT',()=>{try{db.close()}finally{process.exit(0)}});
-process.on('SIGTERM',()=>{try{db.close()}finally{process.exit(0)}});
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    renderBrands();
+
+    renderTypeChips();
+
+    loadNavUser();
+
+
+    const searchInput =
+      document.querySelector("#brandSearch");
+
+
+    if (searchInput) {
+
+      searchInput.addEventListener(
+        "input",
+        () => {
+
+          renderBrands();
+
+          const chips =
+            document.querySelectorAll(
+              ".type-chip"
+            );
+
+
+          chips.forEach(chip =>
+            chip.classList.remove("active")
+          );
+
+
+          const all =
+            document.querySelector(
+              '[data-type="All"]'
+            );
+
+
+          if (all) {
+            all.classList.add("active");
+          }
+
+        }
+      );
+
+    }
+
+
+    const originSelect =
+      document.querySelector("#brandOrigin");
+
+
+    if (originSelect) {
+
+      originSelect.addEventListener(
+        "change",
+        () => {
+
+          renderBrands();
+
+          const chips =
+            document.querySelectorAll(
+              ".type-chip"
+            );
+
+
+          chips.forEach(chip =>
+            chip.classList.remove("active")
+          );
+
+
+          const all =
+            document.querySelector(
+              '[data-type="All"]'
+            );
+
+
+          if (all) {
+            all.classList.add("active");
+          }
+
+        }
+      );
+
+    }
+
+
+    const concernSelect =
+      document.querySelector("#brandConcern");
+
+
+    if (concernSelect) {
+
+      concernSelect.addEventListener(
+        "change",
+        () => {
+
+          renderBrands();
+
+          const chips =
+            document.querySelectorAll(
+              ".type-chip"
+            );
+
+
+          chips.forEach(chip =>
+            chip.classList.remove("active")
+          );
+
+
+          const all =
+            document.querySelector(
+              '[data-type="All"]'
+            );
+
+
+          if (all) {
+            all.classList.add("active");
+          }
+
+        }
+      );
+
+    }
+
+  }
+);
+
+
+// ============================================================
+// GLOBAL FUNCTIONS
+// ============================================================
+
+window.BRANDS =
+  BRANDS;
+
+window.productThumb =
+  productThumb;
+
+window.renderBrands =
+  renderBrands;
+
+window.searchProducts =
+  searchProducts;
+
+window.logout =
+  logout;
