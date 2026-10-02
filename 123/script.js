@@ -1,387 +1,494 @@
-// ===============================
+// ============================================
 // SKIN DECODE - MAIN SCRIPT
-// ===============================
+// ============================================
+
+// ============================================
+// PRODUCT DATA
+// ============================================
 
 const BRANDS = [
-  ["Korean","COSRX","Low pH Good Morning Gel Cleanser","Cleanser","acne oily blackhead","Gentle gel cleanser with tea tree oil and BHA."],
-  ["Korean","COSRX","BHA Blackhead Power Liquid","Treatment","blackhead acne oily","Leave-on exfoliant with betaine salicylate for clogged pores."],
-  ["Korean","COSRX","Advanced Snail 96 Mucin Power Essence","Essence","dry redness dull","Lightweight hydrating essence that leaves skin bouncy."],
-  ["Korean","Beauty of Joseon","Relief Sun: Rice + Probiotics SPF50+","Sunscreen","pigment dull aging dry redness","Comfortable, non-greasy daily sunscreen."],
-  ["Korean","Beauty of Joseon","Glow Serum: Propolis + Niacinamide","Serum","acne oily dull","Soothing and tone-evening, good for breakout-prone skin."],
-  ["Korean","Beauty of Joseon","Revive Serum: Ginseng + Snail Mucin","Serum","aging dry","Hydrating serum for a firmer, smoother look."],
-  ["Korean","Anua","Heartleaf 77% Soothing Toner","Toner","redness acne","Calming toner for irritated or reactive skin."],
-  ["Korean","Skin1004","Madagascar Centella Ampoule","Serum","redness acne dry","Centella ampoule that soothes and supports the barrier."],
-  ["Korean","Laneige","Water Bank Blue Hyaluronic Cream","Moisturiser","dry","Hyaluronic acid cream for dehydrated skin."],
-  ["Korean","Isntree","Hyaluronic Acid Toner","Toner","dry dull","Light layered hydration, suits sensitive skin."],
-  ["Korean","Some By Mi","AHA BHA PHA 30 Days Miracle Toner","Toner","blackhead acne dull","Mild exfoliating toner, use a few nights a week."],
-  ["Korean","Round Lab","1025 Dokdo Toner","Toner","dry redness dull","Simple, gentle toner with mineral-rich water."],
+  ["Korean","COSRX","Low pH Good Morning Gel Cleanser","Cleanser","acne oily blackhead","Gentle gel cleanser with tea tree oil and BHA.","images/cosrx-cleanser.jpg"],
 
-  ["Indian","Minimalist","10% Niacinamide Serum","Serum","oily acne pigment blackhead","Targets oil, pores and uneven tone."],
-  ["Indian","Minimalist","2% Salicylic Acid Serum","Serum","acne blackhead oily","Unclogs pores. Start a few nights a week."],
-  ["Indian","Minimalist","10% Vitamin C Face Serum","Serum","pigment dull","Morning antioxidant for dark spots and dullness."],
-  ["Indian","Minimalist","0.3% Retinol Serum","Serum","aging acne","Beginner-friendly retinol, night use only."],
-  ["Indian","Minimalist","Light Fluid SPF 50 Sunscreen","Sunscreen","oily acne pigment","Light texture for oily skin."],
-  ["Indian","The Derma Co","2% Salicylic Acid Face Wash","Cleanser","acne blackhead oily","Daily cleanser for breakouts and clogged pores."],
-  ["Indian","The Derma Co","1% Hyaluronic Sunscreen Aqua Gel SPF 50","Sunscreen","dry dull oily","Hydrating gel sunscreen."],
-  ["Indian","Dot & Key","Vitamin C + E Super Bright Moisturizer","Moisturiser","pigment dull","Brightening moisturiser for everyday glow."],
-  ["Indian","Plum","Green Tea Pore Cleansing Face Wash","Cleanser","oily acne","Mild face wash for oily, acne-prone skin."],
-  ["Indian","Re'equil","Ceramide & Hyaluronic Acid Moisturizing Cream","Moisturiser","dry redness","Barrier-support cream for dry or sensitive skin."],
-  ["Indian","Dr. Sheth's","Ceramide & Vitamin C Oil-Free Moisturizer","Moisturiser","oily pigment","Oil-free hydration with brightening."],
-  ["Indian","Aqualogica","Glow+ Dewy Sunscreen SPF 50","Sunscreen","dull dry","Dewy-finish sunscreen for normal to dry skin."]
-].map(([origin,brand,name,type,c,note]) => ({
+  ["Korean","COSRX","BHA Blackhead Power Liquid","Treatment","blackhead acne oily","Leave-on exfoliant with betaine salicylate.","images/cosrx-bha.jpg"],
+
+  ["Korean","COSRX","Advanced Snail 96 Mucin Power Essence","Essence","dry redness dull","Lightweight hydrating essence.","images/cosrx-snail.jpg"],
+
+  ["Korean","Beauty of Joseon","Relief Sun: Rice + Probiotics SPF50+","Sunscreen","pigment dull aging dry redness","Comfortable daily sunscreen.","images/boj-sunscreen.jpg"],
+
+  ["Korean","Beauty of Joseon","Glow Serum: Propolis + Niacinamide","Serum","acne oily dull","Soothing serum for uneven-looking skin.","images/boj-glow.jpg"],
+
+  ["Korean","Beauty of Joseon","Revive Serum: Ginseng + Snail Mucin","Serum","aging dry","Hydrating serum for a smoother look.",""],
+
+  ["Korean","Anua","Heartleaf 77% Soothing Toner","Toner","redness acne","Calming toner for reactive skin.","images/anua-toner.jpg"],
+
+  ["Korean","Skin1004","Madagascar Centella Ampoule","Serum","redness acne dry","Centella ampoule for soothing hydration.","images/skin1004-ampoule.jpg"],
+
+  ["Korean","Laneige","Water Bank Blue Hyaluronic Cream","Moisturiser","dry","Hyaluronic acid cream for dehydrated skin.",""],
+
+  ["Korean","Isntree","Hyaluronic Acid Toner","Toner","dry dull","Light layered hydration for sensitive skin.",""],
+
+  ["Korean","Some By Mi","AHA BHA PHA 30 Days Miracle Toner","Toner","blackhead acne dull","Mild exfoliating toner.",""],
+
+  ["Korean","Round Lab","1025 Dokdo Toner","Toner","dry redness dull","Simple, gentle toner.",""],
+
+  ["Indian","Minimalist","10% Niacinamide Serum","Serum","oily acne pigment blackhead","Targets oil, pores and uneven tone.",""],
+
+  ["Indian","Minimalist","2% Salicylic Acid Serum","Serum","acne blackhead oily","Helps unclog pores.",""],
+
+  ["Indian","Minimalist","10% Vitamin C Face Serum","Serum","pigment dull","Morning antioxidant for dull-looking skin.",""],
+
+  ["Indian","Minimalist","0.3% Retinol Serum","Serum","aging acne","Beginner-friendly retinol serum.",""],
+
+  ["Indian","Minimalist","Light Fluid SPF 50 Sunscreen","Sunscreen","oily acne pigment","Light sunscreen texture.",""],
+
+  ["Indian","The Derma Co","2% Salicylic Acid Face Wash","Cleanser","acne blackhead oily","Face wash for breakout-prone skin.",""],
+
+  ["Indian","The Derma Co","1% Hyaluronic Sunscreen Aqua Gel SPF 50","Sunscreen","dry dull oily","Hydrating gel sunscreen.",""],
+
+  ["Indian","Dot & Key","Vitamin C + E Super Bright Moisturizer","Moisturiser","pigment dull","Brightening moisturiser.",""],
+
+  ["Indian","Plum","Green Tea Pore Cleansing Face Wash","Cleanser","oily acne","Mild cleanser for oily skin.",""],
+
+  ["Indian","Re'equil","Ceramide & Hyaluronic Acid Moisturizing Cream","Moisturiser","dry redness","Barrier-support moisturiser.",""],
+
+  ["Indian","Dr. Sheth's","Ceramide & Vitamin C Oil-Free Moisturizer","Moisturiser","oily pigment","Oil-free hydration.",""],
+
+  ["Indian","Aqualogica","Glow+ Dewy Sunscreen SPF 50","Sunscreen","dull dry","Dewy-finish sunscreen.",""]
+
+].map(([origin, brand, name, type, concerns, note, image]) => ({
   origin,
   brand,
   name,
   type,
-  c:c.split(" "),
-  note
+  c: concerns.split(" "),
+  note,
+  image
 }));
 
 
-// ===============================
-// PRODUCT IMAGE / ILLUSTRATION
-// ===============================
+// ============================================
+// ESCAPE HTML
+// ============================================
 
-function slug(b){
-  return (b.brand + " " + b.name)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g,"-")
-    .replace(/^-|-$/g,"");
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-function productThumb(b){
 
-  const type = b.type || "Product";
+// ============================================
+// PRODUCT IMAGE
+// ============================================
 
-  const labels = {
-    Cleanser: "CLEANSER",
-    Toner: "TONER",
-    Serum: "SERUM",
-    Essence: "ESSENCE",
-    Moisturiser: "MOISTURISER",
-    Sunscreen: "SPF 50",
-    Treatment: "TREATMENT"
-  };
+function productThumb(product) {
 
-  const label = labels[type] || "SKIN CARE";
+  // If an actual image exists
+  if (product.image) {
 
-  const id = slug(b);
+    return `
+      <div class="product-art product-image">
 
+        <img
+          src="${product.image}"
+          alt="${escapeHtml(product.brand + " " + product.name)}"
+          loading="lazy"
+          onerror="this.style.display='none'; this.parentElement.querySelector('.image-fallback').style.display='flex';"
+        >
+
+        <div class="image-fallback" style="display:none;">
+          <div>
+            <strong>${escapeHtml(product.brand)}</strong>
+            <span>${escapeHtml(product.type)}</span>
+          </div>
+        </div>
+
+      </div>
+    `;
+
+  }
+
+
+  // Fallback when no image is available
   return `
-    <div class="product-art product-illustration">
+    <div class="product-art product-placeholder">
 
-      <svg
-        viewBox="0 0 260 260"
-        class="product-svg"
-        role="img"
-        aria-label="${b.brand} ${b.name}"
-      >
+      <div class="placeholder-bottle">
 
-        <defs>
+        <div class="placeholder-cap"></div>
 
-          <linearGradient
-            id="pbg-${id}"
-            x1="0"
-            y1="0"
-            x2="1"
-            y2="1"
-          >
-            <stop
-              offset="0"
-              stop-color="#ffffff"
-            />
+        <div class="placeholder-body">
 
-            <stop
-              offset="1"
-              stop-color="#f4dce4"
-            />
-          </linearGradient>
+          <strong>
+            ${escapeHtml(product.brand)}
+          </strong>
 
-        </defs>
+          <span>
+            ${escapeHtml(product.type)}
+          </span>
 
-        <!-- Shadow -->
-        <ellipse
-          cx="130"
-          cy="220"
-          rx="70"
-          ry="12"
-          fill="#ead2da"
-        />
+        </div>
 
-        <!-- Main bottle -->
-        <rect
-          x="88"
-          y="68"
-          width="84"
-          height="145"
-          rx="18"
-          fill="url(#pbg-${id})"
-          stroke="#7e2a45"
-          stroke-width="3"
-        />
-
-        <!-- Cap -->
-        <rect
-          x="103"
-          y="45"
-          width="54"
-          height="28"
-          rx="7"
-          fill="#ffffff"
-          stroke="#7e2a45"
-          stroke-width="3"
-        />
-
-        <!-- Pump -->
-        <rect
-          x="119"
-          y="28"
-          width="22"
-          height="20"
-          rx="5"
-          fill="#7e2a45"
-        />
-
-        <!-- Label -->
-        <rect
-          x="103"
-          y="108"
-          width="54"
-          height="55"
-          rx="8"
-          fill="#ffffff"
-          opacity=".95"
-        />
-
-        <!-- Brand -->
-        <text
-          x="130"
-          y="130"
-          text-anchor="middle"
-          font-size="12"
-          font-weight="700"
-          fill="#7e2a45"
-        >
-          ${b.brand}
-        </text>
-
-        <!-- Product type -->
-        <text
-          x="130"
-          y="148"
-          text-anchor="middle"
-          font-size="9"
-          fill="#7e2a45"
-        >
-          ${label}
-        </text>
-
-      </svg>
+      </div>
 
     </div>
   `;
 }
 
 
-// ===============================
-// PRODUCT TYPE MATCHING
-// ===============================
+// ============================================
+// CREATE BRAND CARD
+// ============================================
 
-const TMATCH = [
-  ["Cleanser", /cleanser|face ?wash|cleansing/],
-  ["Toner", /toner|mist/],
-  ["Serum", /serum|ampoule/],
-  ["Essence", /essence/],
-  ["Moisturiser", /moisturi[sz]er|cream|lotion/],
-  ["Sunscreen", /sunscreen|sun ?block|spf/],
-  ["Treatment", /treatment|exfoliant/]
-];
+function createBrandCard(product) {
 
-const TYPE_ART = {
-  Cleanser:"pump",
-  Toner:"toner",
-  Serum:"serum",
-  Essence:"serum",
-  Moisturiser:"jar",
-  Sunscreen:"tube",
-  Treatment:"serum"
-};
+  return `
+    <article class="bcard brand-card">
 
+      <div class="bart brand-image">
 
-// ===============================
-// UTILITY
-// ===============================
+        ${productThumb(product)}
 
-function escapeHtml(value){
-  return String(value ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-}
+      </div>
 
+      <div class="bbody brand-info">
 
-// ===============================
-// RENDER BRANDS
-// ===============================
-
-function renderBrands(){
-
-  const grid = document.querySelector("#brandGrid");
-
-  if(!grid){
-    return;
-  }
-
-  grid.innerHTML = BRANDS.map((b,index) => {
-
-    return `
-      <article class="bcard">
-
-        <div class="bart">
-          ${productThumb(b)}
+        <div class="eyebrow">
+          ${escapeHtml(product.origin)}
         </div>
 
-        <div class="bbody">
+        <h3>
+          ${escapeHtml(product.brand)}
+        </h3>
 
-          <div class="eyebrow">
-            ${escapeHtml(b.origin)}
-          </div>
+        <h4>
+          ${escapeHtml(product.name)}
+        </h4>
 
-          <h3>
-            ${escapeHtml(b.brand)}
-          </h3>
+        <span class="pill">
+          ${escapeHtml(product.type)}
+        </span>
 
-          <h4>
-            ${escapeHtml(b.name)}
-          </h4>
+        <p>
+          ${escapeHtml(product.note)}
+        </p>
 
-          <span class="pill">
-            ${escapeHtml(b.type)}
-          </span>
+      </div>
 
-          <p>
-            ${escapeHtml(b.note)}
-          </p>
-
-        </div>
-
-      </article>
-    `;
-
-  }).join("");
+    </article>
+  `;
 }
 
 
-// ===============================
-// PRODUCT SEARCH
-// ===============================
+// ============================================
+// FILTER PRODUCTS
+// ============================================
 
-function searchProducts(query){
-
-  const q = String(query || "")
-    .toLowerCase()
-    .trim();
-
-  if(!q){
-    return BRANDS;
-  }
-
-  return BRANDS.filter(b => {
-
-    const text = [
-      b.origin,
-      b.brand,
-      b.name,
-      b.type,
-      b.note,
-      ...(b.c || [])
-    ]
-    .join(" ")
-    .toLowerCase();
-
-    return text.includes(q);
-  });
-}
-
-
-// ===============================
-// INITIALIZE
-// ===============================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  renderBrands();
+function filterProducts() {
 
   const searchInput =
     document.querySelector("#brandSearch") ||
     document.querySelector("#searchInput");
 
-  if(searchInput){
+  const originSelect =
+    document.querySelector("#brandOrigin");
 
-    searchInput.addEventListener("input", () => {
+  const concernSelect =
+    document.querySelector("#brandConcern");
 
-      const grid =
-        document.querySelector("#brandGrid");
+  const search =
+    searchInput
+      ? searchInput.value.toLowerCase().trim()
+      : "";
 
-      if(!grid){
-        return;
-      }
+  const origin =
+    originSelect
+      ? originSelect.value
+      : "All";
 
-      const results =
-        searchProducts(searchInput.value);
+  const concern =
+    concernSelect
+      ? concernSelect.value
+      : "All";
 
-      grid.innerHTML = results.map(b => {
 
-        return `
-          <article class="bcard">
+  return BRANDS.filter(product => {
 
-            <div class="bart">
-              ${productThumb(b)}
-            </div>
+    const searchText = [
+      product.origin,
+      product.brand,
+      product.name,
+      product.type,
+      product.note,
+      ...(product.c || [])
+    ]
+      .join(" ")
+      .toLowerCase();
 
-            <div class="bbody">
 
-              <div class="eyebrow">
-                ${escapeHtml(b.origin)}
-              </div>
+    const matchesSearch =
+      !search ||
+      searchText.includes(search);
 
-              <h3>
-                ${escapeHtml(b.brand)}
-              </h3>
 
-              <h4>
-                ${escapeHtml(b.name)}
-              </h4>
+    const matchesOrigin =
+      origin === "All" ||
+      product.origin === origin;
 
-              <span class="pill">
-                ${escapeHtml(b.type)}
-              </span>
 
-              <p>
-                ${escapeHtml(b.note)}
-              </p>
+    const matchesConcern =
+      concern === "All" ||
+      product.c.includes(concern);
 
-            </div>
 
-          </article>
-        `;
+    return (
+      matchesSearch &&
+      matchesOrigin &&
+      matchesConcern
+    );
 
-      }).join("");
+  });
 
-    });
+}
+
+
+// ============================================
+// RENDER BRANDS
+// ============================================
+
+function renderBrands() {
+
+  const grid =
+    document.querySelector("#brandGrid");
+
+  if (!grid) {
+    return;
+  }
+
+
+  const products =
+    filterProducts();
+
+
+  if (!products.length) {
+
+    grid.innerHTML = `
+      <div class="empty-result">
+
+        <h2>
+          No products found
+        </h2>
+
+        <p>
+          Try changing your search or filters.
+        </p>
+
+      </div>
+    `;
+
+    return;
+  }
+
+
+  grid.innerHTML =
+    products
+      .map(createBrandCard)
+      .join("");
+
+}
+
+
+// ============================================
+// SEARCH
+// ============================================
+
+function searchProducts(query) {
+
+  const q =
+    String(query || "")
+      .toLowerCase()
+      .trim();
+
+
+  if (!q) {
+    return BRANDS;
+  }
+
+
+  return BRANDS.filter(product => {
+
+    const text = [
+      product.origin,
+      product.brand,
+      product.name,
+      product.type,
+      product.note,
+      ...(product.c || [])
+    ]
+      .join(" ")
+      .toLowerCase();
+
+
+    return text.includes(q);
+
+  });
+
+}
+
+
+// ============================================
+// USER
+// ============================================
+
+async function loadUser() {
+
+  const navName =
+    document.querySelector("#navName");
+
+  if (!navName) {
+    return;
+  }
+
+
+  try {
+
+    const response =
+      await fetch("/api/me", {
+        credentials: "include"
+      });
+
+
+    if (!response.ok) {
+      return;
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if (data.user) {
+
+      navName.textContent =
+        data.user.name || "";
+
+    }
+
+  } catch (error) {
+
+    console.log(
+      "User loading skipped"
+    );
 
   }
 
-});
+}
 
 
-// ===============================
-// GLOBAL HELPERS
-// ===============================
+// ============================================
+// LOGOUT
+// ============================================
+
+async function logout() {
+
+  try {
+
+    await fetch(
+      "/api/logout",
+      {
+        method: "POST",
+        credentials: "include"
+      }
+    );
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+
+  window.location.href =
+    "index.html";
+
+}
+
+
+// ============================================
+// INITIALIZE
+// ============================================
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    // Render products
+    renderBrands();
+
+
+    // Search
+    const searchInput =
+      document.querySelector("#brandSearch") ||
+      document.querySelector("#searchInput");
+
+
+    if (searchInput) {
+
+      searchInput.addEventListener(
+        "input",
+        renderBrands
+      );
+
+    }
+
+
+    // Origin filter
+    const originSelect =
+      document.querySelector("#brandOrigin");
+
+
+    if (originSelect) {
+
+      originSelect.addEventListener(
+        "change",
+        renderBrands
+      );
+
+    }
+
+
+    // Concern filter
+    const concernSelect =
+      document.querySelector("#brandConcern");
+
+
+    if (concernSelect) {
+
+      concernSelect.addEventListener(
+        "change",
+        renderBrands
+      );
+
+    }
+
+
+    // Load logged-in user
+    loadUser();
+
+  }
+);
+
+
+// ============================================
+// GLOBAL EXPORTS
+// ============================================
 
 window.BRANDS = BRANDS;
 window.productThumb = productThumb;
 window.renderBrands = renderBrands;
 window.searchProducts = searchProducts;
+window.filterProducts = filterProducts;
+window.logout = logout;
