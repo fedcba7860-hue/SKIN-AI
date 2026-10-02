@@ -169,19 +169,16 @@ function brandList(org,key,type){
 }
 /* ===== Self-contained product visuals: no real photos or external image URLs needed ===== */
 function productThumb(b){
-  const photos = {
-    "COSRX|Low pH Good Morning Gel Cleanser": "images/products/cosrx-cleanser.jpg",
-    "COSRX|BHA Blackhead Power Liquid": "images/products/cosrx-bha.jpg",
-    "COSRX|Advanced Snail 96 Mucin Power Essence": "images/products/cosrx-snail.jpg",
-
-    "Beauty of Joseon|Relief Sun: Rice + Probiotics SPF50+": "images/products/boj-sunscreen.jpg",
-    "Beauty of Joseon|Glow Serum: Propolis + Niacinamide": "images/products/boj-glow.jpg",
-
-    "Anua|Heartleaf 77% Soothing Toner": "images/products/anua-toner.jpg",
-
-    "Skin1004|Madagascar Centella Ampoule": "images/products/skin1004-ampoule.jpg"
-  };
-
+  return `
+    <div class="product-art">
+      <img
+        src="images/products/cosrx-low-ph-good-morning-gel-cleanser.jpg"
+        alt="${b.brand} ${b.name}"
+        class="product-photo"
+      >
+    </div>
+  `;
+}
   const key = `${b.brand}|${b.name}`;
   const photo = photos[key];
 
