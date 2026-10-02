@@ -1,14 +1,977 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Skin Decode | Brands</title><link rel="stylesheet" href="style.css"></head><body>
-<nav class="navbar">
-<a class="brand nav-brand" href="home.html">SKIN <span>DECODE</span></a>
-<div class="nav-links">
-<a href="home.html">Dashboard</a><a href="quiz.html">Skin Scan</a><a href="ingredients.html">Ingredients</a><a href="profile.html">My Skin</a><a href="about.html">About</a>
-</div>
-<div class="nav-user"><span id="navName"></span><button class="icon-btn" onclick="logout()" title="Logout">↪</button></div>
-</nav>
-<main class="shell"><div class="page-title"><span class="eyebrow">KOREAN & INDIAN SKINCARE</span><h1>Brands worth knowing</h1><p class="tagline">Because your skin deserves better.</p><p>Pick a product type (cleanser, toner, serum…) and a concern. Pack images are illustrations, not the brands' official photos. Formulas change, so always check the ingredient list and patch-test.</p></div>
-<div class="library-tools"><input id="brandSearch" placeholder="Search brand or product…" oninput="renderBrands()"><select id="brandOrigin" onchange="renderBrands()"><option value="All">All origins</option><option>Korean</option><option>Indian</option></select><select id="brandConcern" onchange="renderBrands()"><option value="All">All concerns</option><option value="acne">Acne</option><option value="oily">Oily skin</option><option value="dry">Dryness</option><option value="pigment">Dark spots</option><option value="dull">Dullness</option><option value="redness">Redness</option><option value="blackhead">Blackheads</option><option value="aging">Fine lines</option></select></div>
-<div id="typeChips" class="type-chips"></div>
-<div id="brandGrid" class="ingredient-grid"></div></main>
-<footer>© 2026 Skin Decode · Educational skincare guide. Brand mentions are suggestions, not endorsements or medical advice.</footer>
-<script src="script.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Skin Decode | Brands</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+  <style>
+
+    /* ================================
+       BRANDS PAGE
+       ================================ */
+
+    .brands-page {
+      max-width: 1250px;
+      margin: 0 auto;
+      padding: 50px 24px 70px;
+    }
+
+    .brands-header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .brands-header .eyebrow {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .brands-header h1 {
+      margin: 0;
+      font-size: 42px;
+    }
+
+    .brands-header p {
+      max-width: 700px;
+      margin: 15px auto;
+      line-height: 1.7;
+    }
+
+    /* Filters */
+
+    .brand-filters {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    .brand-filters input,
+    .brand-filters select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #dec8cf;
+      border-radius: 10px;
+      background: white;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .brand-filters input:focus,
+    .brand-filters select:focus {
+      border-color: #8e294b;
+    }
+
+    /* Type buttons */
+
+    .brand-types {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 35px;
+    }
+
+    .brand-type-btn {
+      border: 1px solid #d9bcc6;
+      background: white;
+      color: #7e2945;
+      padding: 9px 17px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .brand-type-btn:hover,
+    .brand-type-btn.active {
+      background: #7e2945;
+      color: white;
+    }
+
+    /* Product grid */
+
+    #brandGrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 25px;
+    }
+
+    .brand-card {
+      overflow: hidden;
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #eadde1;
+      box-shadow: 0 8px 25px rgba(80, 30, 45, 0.08);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .brand-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 35px rgba(80, 30, 45, 0.13);
+    }
+
+    /* IMAGE */
+
+    .brand-image {
+      width: 100%;
+      height: 280px;
+      background: #fff8fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .brand-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 20px;
+      display: block;
+    }
+
+    .no-image {
+      text-align: center;
+      color: #8e294b;
+      padding: 30px;
+    }
+
+    .no-image strong {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 7px;
+    }
+
+    .no-image span {
+      font-size: 13px;
+    }
+
+    /* Product information */
+
+    .brand-info {
+      padding: 22px;
+    }
+
+    .brand-origin {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #9a6475;
+      margin-bottom: 7px;
+    }
+
+    .brand-info h2 {
+      margin: 0 0 7px;
+      font-size: 22px;
+      color: #592036;
+    }
+
+    .brand-info h3 {
+      margin: 0 0 13px;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: #4f4146;
+    }
+
+    .brand-pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background: #f7e9ee;
+      color: #7e2945;
+      font-size: 12px;
+      margin-bottom: 13px;
+    }
+
+    .brand-info p {
+      margin: 0;
+      line-height: 1.6;
+      font-size: 14px;
+      color: #675a5f;
+    }
+
+    .empty-result {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 70px 20px;
+      background: white;
+      border-radius: 15px;
+    }
+
+    /* Responsive */
+
+    @media (max-width: 900px) {
+
+      #brandGrid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .brand-filters {
+        grid-template-columns: 1fr;
+      }
+
+    }
+
+    @media (max-width: 600px) {
+
+      .brands-page {
+        padding: 35px 15px;
+      }
+
+      .brands-header h1 {
+        font-size: 32px;
+      }
+
+      #brandGrid {
+        grid-template-columns: 1fr;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+  <!-- NAVBAR -->
+
+  <nav class="navbar">
+
+    <a
+      class="brand nav-brand"
+      href="home.html"
+    >
+      SKIN <span>DECODE</span>
+    </a>
+
+    <div class="nav-links">
+
+      <a href="home.html">
+        Dashboard
+      </a>
+
+      <a href="quiz.html">
+        Skin Scan
+      </a>
+
+      <a href="ingredients.html">
+        Ingredients
+      </a>
+
+      <a href="brands.html">
+        Brands
+      </a>
+
+      <a href="profile.html">
+        My Skin
+      </a>
+
+      <a href="about.html">
+        About
+      </a>
+
+    </div>
+
+    <div class="nav-user">
+
+      <span id="navName"></span>
+
+      <button
+        class="icon-btn"
+        onclick="logout()"
+        title="Logout"
+      >
+        ↪
+      </button>
+
+    </div>
+
+  </nav>
+
+
+  <!-- MAIN -->
+
+  <main class="brands-page">
+
+
+    <!-- HEADER -->
+
+    <section class="brands-header">
+
+      <span class="eyebrow">
+        KOREAN & INDIAN SKINCARE
+      </span>
+
+      <h1>
+        Brands worth knowing
+      </h1>
+
+      <p>
+        Explore skincare products from popular Korean
+        and Indian brands. Search by product, brand,
+        origin or skin concern.
+      </p>
+
+    </section>
+
+
+    <!-- FILTERS -->
+
+    <section class="brand-filters">
+
+      <input
+        type="text"
+        id="brandSearch"
+        placeholder="Search brand or product..."
+      >
+
+      <select id="brandOrigin">
+
+        <option value="All">
+          All origins
+        </option>
+
+        <option value="Korean">
+          Korean
+        </option>
+
+        <option value="Indian">
+          Indian
+        </option>
+
+      </select>
+
+
+      <select id="brandConcern">
+
+        <option value="All">
+          All concerns
+        </option>
+
+        <option value="acne">
+          Acne
+        </option>
+
+        <option value="oily">
+          Oily skin
+        </option>
+
+        <option value="dry">
+          Dryness
+        </option>
+
+        <option value="pigment">
+          Dark spots
+        </option>
+
+        <option value="dull">
+          Dullness
+        </option>
+
+        <option value="redness">
+          Redness
+        </option>
+
+        <option value="blackhead">
+          Blackheads
+        </option>
+
+        <option value="aging">
+          Fine lines
+        </option>
+
+      </select>
+
+    </section>
+
+
+    <!-- TYPE FILTERS -->
+
+    <div
+      class="brand-types"
+      id="typeChips"
+    >
+
+      <button
+        class="brand-type-btn active"
+        data-type="All"
+      >
+        All
+      </button>
+
+      <button
+        class="brand-type-btn"
+        data-type="Cleanser"
+      >
+        Cleansers
+      </button>
+
+      <button
+        class="brand-type-btn"
+        data-type="Toner"
+      >
+        Toners
+      </button>
+
+      <button
+        class="brand-type-btn"
+        data-type="Serum"
+      >
+        Serums
+      </button>
+
+      <button
+        class="brand-type-btn"
+        data-type="Essence"
+      >
+        Essences
+      </button>
+
+      <button
+        class="brand-type-btn"
+        data-type="Moisturiser"
+      >
+        Moisturisers
+      </button>
+
+      <button
+        class="brand-type-btn"
+        data-type="Sunscreen"
+      >
+        Sunscreens
+      </button>
+
+      <button
+        class="brand-type-btn"
+        data-type="Treatment"
+      >
+        Treatments
+      </button>
+
+    </div>
+
+
+    <!-- PRODUCT GRID -->
+
+    <div id="brandGrid"></div>
+
+
+  </main>
+
+
+  <!-- FOOTER -->
+
+  <footer>
+
+    © 2026 Skin Decode · Educational skincare guide.
+    Brand mentions are suggestions, not endorsements
+    or medical advice.
+
+  </footer>
+
+
+  <!-- JAVASCRIPT -->
+
+  <script>
+
+    const products = [
+
+      {
+        origin: "Korean",
+        brand: "COSRX",
+        name: "Low pH Good Morning Gel Cleanser",
+        type: "Cleanser",
+        image: "images/products/cosrx-cleanser.jpg",
+        concerns: ["acne","oily","blackhead"],
+        note: "Gentle gel cleanser with tea tree oil and BHA."
+      },
+
+      {
+        origin: "Korean",
+        brand: "COSRX",
+        name: "BHA Blackhead Power Liquid",
+        type: "Treatment",
+        image: "images/products/cosrx-bha.jpg",
+        concerns: ["blackhead","acne","oily"],
+        note: "Leave-on exfoliant for clogged pores."
+      },
+
+      {
+        origin: "Korean",
+        brand: "COSRX",
+        name: "Advanced Snail 96 Mucin Power Essence",
+        type: "Essence",
+        image: "images/products/cosrx-snail.jpg",
+        concerns: ["dry","redness","dull"],
+        note: "Lightweight hydrating essence."
+      },
+
+      {
+        origin: "Korean",
+        brand: "Beauty of Joseon",
+        name: "Relief Sun: Rice + Probiotics SPF50+",
+        type: "Sunscreen",
+        image: "images/products/boj-sunscreen.jpg",
+        concerns: ["pigment","dull","aging","dry","redness"],
+        note: "Comfortable daily sunscreen."
+      },
+
+      {
+        origin: "Korean",
+        brand: "Beauty of Joseon",
+        name: "Glow Serum: Propolis + Niacinamide",
+        type: "Serum",
+        image: "images/products/boj-glow.jpg",
+        concerns: ["acne","oily","dull"],
+        note: "Soothing serum for uneven-looking skin."
+      },
+
+      {
+        origin: "Korean",
+        brand: "Anua",
+        name: "Heartleaf 77% Soothing Toner",
+        type: "Toner",
+        image: "images/products/anua-toner.jpg",
+        concerns: ["redness","acne"],
+        note: "Calming toner for reactive skin."
+      },
+
+      {
+        origin: "Korean",
+        brand: "Skin1004",
+        name: "Madagascar Centella Ampoule",
+        type: "Serum",
+        image: "images/products/skin1004-ampoule.jpg",
+        concerns: ["redness","acne","dry"],
+        note: "Centella ampoule for soothing hydration."
+      },
+
+      {
+        origin: "Indian",
+        brand: "Minimalist",
+        name: "10% Niacinamide Serum",
+        type: "Serum",
+        image: "",
+        concerns: ["oily","acne","pigment","blackhead"],
+        note: "Targets oil, pores and uneven tone."
+      },
+
+      {
+        origin: "Indian",
+        brand: "Minimalist",
+        name: "2% Salicylic Acid Serum",
+        type: "Serum",
+        image: "",
+        concerns: ["acne","blackhead","oily"],
+        note: "Helps unclog pores."
+      },
+
+      {
+        origin: "Indian",
+        brand: "Minimalist",
+        name: "10% Vitamin C Face Serum",
+        type: "Serum",
+        image: "",
+        concerns: ["pigment","dull"],
+        note: "Morning antioxidant for dull-looking skin."
+      },
+
+      {
+        origin: "Indian",
+        brand: "Minimalist",
+        name: "Light Fluid SPF 50 Sunscreen",
+        type: "Sunscreen",
+        image: "",
+        concerns: ["oily","acne","pigment"],
+        note: "Light texture for oily skin."
+      },
+
+      {
+        origin: "Indian",
+        brand: "The Derma Co",
+        name: "2% Salicylic Acid Face Wash",
+        type: "Cleanser",
+        image: "",
+        concerns: ["acne","blackhead","oily"],
+        note: "Face wash for breakout-prone skin."
+      },
+
+      {
+        origin: "Indian",
+        brand: "Dot & Key",
+        name: "Vitamin C + E Super Bright Moisturizer",
+        type: "Moisturiser",
+        image: "",
+        concerns: ["pigment","dull"],
+        note: "Brightening moisturiser for everyday use."
+      },
+
+      {
+        origin: "Indian",
+        brand: "Plum",
+        name: "Green Tea Pore Cleansing Face Wash",
+        type: "Cleanser",
+        image: "",
+        concerns: ["oily","acne"],
+        note: "Mild cleanser for oily skin."
+      },
+
+      {
+        origin: "Indian",
+        brand: "Re'equil",
+        name: "Ceramide & Hyaluronic Acid Moisturizing Cream",
+        type: "Moisturiser",
+        image: "",
+        concerns: ["dry","redness"],
+        note: "Barrier-support moisturiser."
+      },
+
+      {
+        origin: "Indian",
+        brand: "Aqualogica",
+        name: "Glow+ Dewy Sunscreen SPF 50",
+        type: "Sunscreen",
+        image: "",
+        concerns: ["dull","dry"],
+        note: "Dewy-finish sunscreen."
+      }
+
+    ];
+
+
+    let selectedType = "All";
+
+
+    function createCard(product) {
+
+      let imageHTML = "";
+
+
+      if (product.image) {
+
+        imageHTML = `
+          <img
+            src="${product.image}"
+            alt="${product.brand} ${product.name}"
+            onerror="this.style.display='none'; this.parentElement.querySelector('.no-image').style.display='block';"
+          >
+        `;
+
+      }
+
+
+      return `
+
+        <article class="brand-card">
+
+          <div class="brand-image">
+
+            ${imageHTML}
+
+            <div
+              class="no-image"
+              style="display:${product.image ? "none" : "block"}"
+            >
+
+              <strong>
+                ${product.brand}
+              </strong>
+
+              <span>
+                ${product.type}
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div class="brand-info">
+
+            <div class="brand-origin">
+              ${product.origin}
+            </div>
+
+            <h2>
+              ${product.brand}
+            </h2>
+
+            <h3>
+              ${product.name}
+            </h3>
+
+            <span class="brand-pill">
+              ${product.type}
+            </span>
+
+            <p>
+              ${product.note}
+            </p>
+
+          </div>
+
+        </article>
+
+      `;
+
+    }
+
+
+    function renderProducts() {
+
+      const grid =
+        document.getElementById("brandGrid");
+
+
+      const search =
+        document
+          .getElementById("brandSearch")
+          .value
+          .toLowerCase()
+          .trim();
+
+
+      const origin =
+        document.getElementById("brandOrigin").value;
+
+
+      const concern =
+        document.getElementById("brandConcern").value;
+
+
+      const filtered =
+        products.filter(product => {
+
+          const searchText = (
+
+            product.brand +
+            " " +
+            product.name +
+            " " +
+            product.type +
+            " " +
+            product.origin
+
+          ).toLowerCase();
+
+
+          const matchesSearch =
+            !search ||
+            searchText.includes(search);
+
+
+          const matchesOrigin =
+            origin === "All" ||
+            product.origin === origin;
+
+
+          const matchesConcern =
+            concern === "All" ||
+            product.concerns.includes(concern);
+
+
+          const matchesType =
+            selectedType === "All" ||
+            product.type === selectedType;
+
+
+          return (
+            matchesSearch &&
+            matchesOrigin &&
+            matchesConcern &&
+            matchesType
+          );
+
+        });
+
+
+      if (!filtered.length) {
+
+        grid.innerHTML = `
+
+          <div class="empty-result">
+
+            <h2>
+              No products found
+            </h2>
+
+            <p>
+              Try changing your search or filters.
+            </p>
+
+          </div>
+
+        `;
+
+        return;
+
+      }
+
+
+      grid.innerHTML =
+        filtered
+          .map(createCard)
+          .join("");
+
+    }
+
+
+    /* Search */
+
+    document
+      .getElementById("brandSearch")
+      .addEventListener(
+        "input",
+        renderProducts
+      );
+
+
+    /* Origin */
+
+    document
+      .getElementById("brandOrigin")
+      .addEventListener(
+        "change",
+        renderProducts
+      );
+
+
+    /* Concern */
+
+    document
+      .getElementById("brandConcern")
+      .addEventListener(
+        "change",
+        renderProducts
+      );
+
+
+    /* Type buttons */
+
+    document
+      .querySelectorAll(".brand-type-btn")
+      .forEach(button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            document
+              .querySelectorAll(".brand-type-btn")
+              .forEach(btn =>
+                btn.classList.remove("active")
+              );
+
+
+            button.classList.add("active");
+
+
+            selectedType =
+              button.dataset.type;
+
+
+            renderProducts();
+
+          }
+        );
+
+      });
+
+
+    /* Initial render */
+
+    renderProducts();
+
+
+    /* User name */
+
+    async function loadUser() {
+
+      const navName =
+        document.getElementById("navName");
+
+
+      try {
+
+        const response =
+          await fetch("/api/me", {
+            credentials: "include"
+          });
+
+
+        if (!response.ok) {
+          return;
+        }
+
+
+        const data =
+          await response.json();
+
+
+        if (data.user) {
+
+          navName.textContent =
+            data.user.name || "";
+
+        }
+
+      } catch (error) {
+
+        console.log(
+          "User loading skipped"
+        );
+
+      }
+
+    }
+
+
+    loadUser();
+
+
+    /* Logout */
+
+    async function logout() {
+
+      try {
+
+        await fetch(
+          "/api/logout",
+          {
+            method: "POST",
+            credentials: "include"
+          }
+        );
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+
+      window.location.href =
+        "index.html";
+
+    }
+
+  </script>
+
+</body>
+</html>
