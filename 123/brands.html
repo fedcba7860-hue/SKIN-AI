@@ -1,27 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Skin Decode | Brands</title>
-
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
+  <link rel="stylesheet" href="style.css">
 
   <style>
-
-    /* ================================
-       BRANDS PAGE
-       ================================ */
-
     .brands-page {
       max-width: 1250px;
       margin: 0 auto;
@@ -49,8 +34,6 @@
       line-height: 1.7;
     }
 
-    /* Filters */
-
     .brand-filters {
       display: grid;
       grid-template-columns: 2fr 1fr 1fr;
@@ -67,14 +50,13 @@
       background: white;
       font-size: 15px;
       outline: none;
+      box-sizing: border-box;
     }
 
     .brand-filters input:focus,
     .brand-filters select:focus {
       border-color: #8e294b;
     }
-
-    /* Type buttons */
 
     .brand-types {
       display: flex;
@@ -100,8 +82,6 @@
       color: white;
     }
 
-    /* Product grid */
-
     #brandGrid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -122,8 +102,6 @@
       box-shadow: 0 14px 35px rgba(80, 30, 45, 0.13);
     }
 
-    /* IMAGE */
-
     .brand-image {
       width: 100%;
       height: 280px;
@@ -139,6 +117,7 @@
       height: 100%;
       object-fit: contain;
       padding: 20px;
+      box-sizing: border-box;
       display: block;
     }
 
@@ -157,8 +136,6 @@
     .no-image span {
       font-size: 13px;
     }
-
-    /* Product information */
 
     .brand-info {
       padding: 22px;
@@ -211,10 +188,7 @@
       border-radius: 15px;
     }
 
-    /* Responsive */
-
     @media (max-width: 900px) {
-
       #brandGrid {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -222,11 +196,9 @@
       .brand-filters {
         grid-template-columns: 1fr;
       }
-
     }
 
     @media (max-width: 600px) {
-
       .brands-page {
         padding: 35px 15px;
       }
@@ -238,79 +210,38 @@
       #brandGrid {
         grid-template-columns: 1fr;
       }
-
     }
-
   </style>
-
 </head>
-
 
 <body>
 
-
   <!-- NAVBAR -->
-
   <nav class="navbar">
 
-    <a
-      class="brand nav-brand"
-      href="home.html"
-    >
+    <a class="brand nav-brand" href="home.html">
       SKIN <span>DECODE</span>
     </a>
 
     <div class="nav-links">
-
-      <a href="home.html">
-        Dashboard
-      </a>
-
-      <a href="quiz.html">
-        Skin Scan
-      </a>
-
-      <a href="ingredients.html">
-        Ingredients
-      </a>
-
-      <a href="brands.html">
-        Brands
-      </a>
-
-      <a href="profile.html">
-        My Skin
-      </a>
-
-      <a href="about.html">
-        About
-      </a>
-
+      <a href="home.html">Dashboard</a>
+      <a href="quiz.html">Skin Scan</a>
+      <a href="ingredients.html">Ingredients</a>
+      <a href="brands.html">Brands</a>
+      <a href="profile.html">My Skin</a>
+      <a href="about.html">About</a>
     </div>
 
     <div class="nav-user">
-
       <span id="navName"></span>
-
-      <button
-        class="icon-btn"
-        onclick="logout()"
-        title="Logout"
-      >
-        ↪
-      </button>
-
+      <button class="icon-btn" onclick="logout()" title="Logout">↪</button>
     </div>
 
   </nav>
 
 
   <!-- MAIN -->
-
   <main class="brands-page">
-
-
-    <!-- HEADER -->
 
     <section class="brands-header">
 
@@ -318,21 +249,17 @@
         KOREAN & INDIAN SKINCARE
       </span>
 
-      <h1>
-        Brands worth knowing
-      </h1>
+      <h1>Brands worth knowing</h1>
 
       <p>
-        Explore skincare products from popular Korean
-        and Indian brands. Search by product, brand,
-        origin or skin concern.
+        Explore skincare products from popular Korean and Indian brands.
+        Search by product, brand, origin or skin concern.
       </p>
 
     </section>
 
 
     <!-- FILTERS -->
-
     <section class="brand-filters">
 
       <input
@@ -342,125 +269,58 @@
       >
 
       <select id="brandOrigin">
-
-        <option value="All">
-          All origins
-        </option>
-
-        <option value="Korean">
-          Korean
-        </option>
-
-        <option value="Indian">
-          Indian
-        </option>
-
+        <option value="All">All origins</option>
+        <option value="Korean">Korean</option>
+        <option value="Indian">Indian</option>
       </select>
 
-
       <select id="brandConcern">
-
-        <option value="All">
-          All concerns
-        </option>
-
-        <option value="acne">
-          Acne
-        </option>
-
-        <option value="oily">
-          Oily skin
-        </option>
-
-        <option value="dry">
-          Dryness
-        </option>
-
-        <option value="pigment">
-          Dark spots
-        </option>
-
-        <option value="dull">
-          Dullness
-        </option>
-
-        <option value="redness">
-          Redness
-        </option>
-
-        <option value="blackhead">
-          Blackheads
-        </option>
-
-        <option value="aging">
-          Fine lines
-        </option>
-
+        <option value="All">All concerns</option>
+        <option value="acne">Acne</option>
+        <option value="oily">Oily skin</option>
+        <option value="dry">Dryness</option>
+        <option value="pigment">Dark spots</option>
+        <option value="dull">Dullness</option>
+        <option value="redness">Redness</option>
+        <option value="blackhead">Blackheads</option>
+        <option value="aging">Fine lines</option>
       </select>
 
     </section>
 
 
     <!-- TYPE FILTERS -->
+    <div class="brand-types" id="typeChips">
 
-    <div
-      class="brand-types"
-      id="typeChips"
-    >
-
-      <button
-        class="brand-type-btn active"
-        data-type="All"
-      >
+      <button class="brand-type-btn active" data-type="All">
         All
       </button>
 
-      <button
-        class="brand-type-btn"
-        data-type="Cleanser"
-      >
+      <button class="brand-type-btn" data-type="Cleanser">
         Cleansers
       </button>
 
-      <button
-        class="brand-type-btn"
-        data-type="Toner"
-      >
+      <button class="brand-type-btn" data-type="Toner">
         Toners
       </button>
 
-      <button
-        class="brand-type-btn"
-        data-type="Serum"
-      >
+      <button class="brand-type-btn" data-type="Serum">
         Serums
       </button>
 
-      <button
-        class="brand-type-btn"
-        data-type="Essence"
-      >
+      <button class="brand-type-btn" data-type="Essence">
         Essences
       </button>
 
-      <button
-        class="brand-type-btn"
-        data-type="Moisturiser"
-      >
+      <button class="brand-type-btn" data-type="Moisturiser">
         Moisturisers
       </button>
 
-      <button
-        class="brand-type-btn"
-        data-type="Sunscreen"
-      >
+      <button class="brand-type-btn" data-type="Sunscreen">
         Sunscreens
       </button>
 
-      <button
-        class="brand-type-btn"
-        data-type="Treatment"
-      >
+      <button class="brand-type-btn" data-type="Treatment">
         Treatments
       </button>
 
@@ -468,27 +328,32 @@
 
 
     <!-- PRODUCT GRID -->
-
     <div id="brandGrid"></div>
-
 
   </main>
 
 
-  <!-- FOOTER -->
-
   <footer>
-
     © 2026 Skin Decode · Educational skincare guide.
-    Brand mentions are suggestions, not endorsements
-    or medical advice.
-
+    Brand mentions are suggestions, not endorsements or medical advice.
   </footer>
 
 
-  <!-- JAVASCRIPT -->
-
   <script>
+
+    /*
+      IMPORTANT:
+      Your current images are directly inside:
+
+      123/images/
+
+      NOT:
+
+      123/images/products/
+
+      Therefore the paths below intentionally use:
+      images/filename.jpg
+    */
 
     const products = [
 
@@ -497,8 +362,8 @@
         brand: "COSRX",
         name: "Low pH Good Morning Gel Cleanser",
         type: "Cleanser",
-        image: "images/products/cosrx-cleanser.jpg",
-        concerns: ["acne","oily","blackhead"],
+        image: "images/cosrx-cleanser.jpg",
+        concerns: ["acne", "oily", "blackhead"],
         note: "Gentle gel cleanser with tea tree oil and BHA."
       },
 
@@ -507,8 +372,8 @@
         brand: "COSRX",
         name: "BHA Blackhead Power Liquid",
         type: "Treatment",
-        image: "images/products/cosrx-bha.jpg",
-        concerns: ["blackhead","acne","oily"],
+        image: "images/cosrx-bha.jpg",
+        concerns: ["blackhead", "acne", "oily"],
         note: "Leave-on exfoliant for clogged pores."
       },
 
@@ -517,8 +382,8 @@
         brand: "COSRX",
         name: "Advanced Snail 96 Mucin Power Essence",
         type: "Essence",
-        image: "images/products/cosrx-snail.jpg",
-        concerns: ["dry","redness","dull"],
+        image: "images/cosrx-snail.jpg",
+        concerns: ["dry", "redness", "dull"],
         note: "Lightweight hydrating essence."
       },
 
@@ -527,8 +392,8 @@
         brand: "Beauty of Joseon",
         name: "Relief Sun: Rice + Probiotics SPF50+",
         type: "Sunscreen",
-        image: "images/products/boj-sunscreen.jpg",
-        concerns: ["pigment","dull","aging","dry","redness"],
+        image: "images/boj-sunscreen.jpg",
+        concerns: ["pigment", "dull", "aging", "dry", "redness"],
         note: "Comfortable daily sunscreen."
       },
 
@@ -537,8 +402,8 @@
         brand: "Beauty of Joseon",
         name: "Glow Serum: Propolis + Niacinamide",
         type: "Serum",
-        image: "images/products/boj-glow.jpg",
-        concerns: ["acne","oily","dull"],
+        image: "images/boj-glow.jpg",
+        concerns: ["acne", "oily", "dull"],
         note: "Soothing serum for uneven-looking skin."
       },
 
@@ -547,18 +412,25 @@
         brand: "Anua",
         name: "Heartleaf 77% Soothing Toner",
         type: "Toner",
-        image: "images/products/anua-toner.jpg",
-        concerns: ["redness","acne"],
+        image: "images/anua-toner.jpg",
+        concerns: ["redness", "acne"],
         note: "Calming toner for reactive skin."
       },
 
+      /*
+        Skin1004 image was not present in the screenshot you sent,
+        so this product intentionally uses a fallback card.
+        When you upload skin1004-ampoule.jpg into images/,
+        simply change image to:
+        image: "images/skin1004-ampoule.jpg"
+      */
       {
         origin: "Korean",
         brand: "Skin1004",
         name: "Madagascar Centella Ampoule",
         type: "Serum",
-        image: "images/products/skin1004-ampoule.jpg",
-        concerns: ["redness","acne","dry"],
+        image: "",
+        concerns: ["redness", "acne", "dry"],
         note: "Centella ampoule for soothing hydration."
       },
 
@@ -568,7 +440,7 @@
         name: "10% Niacinamide Serum",
         type: "Serum",
         image: "",
-        concerns: ["oily","acne","pigment","blackhead"],
+        concerns: ["oily", "acne", "pigment", "blackhead"],
         note: "Targets oil, pores and uneven tone."
       },
 
@@ -578,7 +450,7 @@
         name: "2% Salicylic Acid Serum",
         type: "Serum",
         image: "",
-        concerns: ["acne","blackhead","oily"],
+        concerns: ["acne", "blackhead", "oily"],
         note: "Helps unclog pores."
       },
 
@@ -588,7 +460,7 @@
         name: "10% Vitamin C Face Serum",
         type: "Serum",
         image: "",
-        concerns: ["pigment","dull"],
+        concerns: ["pigment", "dull"],
         note: "Morning antioxidant for dull-looking skin."
       },
 
@@ -598,7 +470,7 @@
         name: "Light Fluid SPF 50 Sunscreen",
         type: "Sunscreen",
         image: "",
-        concerns: ["oily","acne","pigment"],
+        concerns: ["oily", "acne", "pigment"],
         note: "Light texture for oily skin."
       },
 
@@ -608,7 +480,7 @@
         name: "2% Salicylic Acid Face Wash",
         type: "Cleanser",
         image: "",
-        concerns: ["acne","blackhead","oily"],
+        concerns: ["acne", "blackhead", "oily"],
         note: "Face wash for breakout-prone skin."
       },
 
@@ -618,7 +490,7 @@
         name: "Vitamin C + E Super Bright Moisturizer",
         type: "Moisturiser",
         image: "",
-        concerns: ["pigment","dull"],
+        concerns: ["pigment", "dull"],
         note: "Brightening moisturiser for everyday use."
       },
 
@@ -628,7 +500,7 @@
         name: "Green Tea Pore Cleansing Face Wash",
         type: "Cleanser",
         image: "",
-        concerns: ["oily","acne"],
+        concerns: ["oily", "acne"],
         note: "Mild cleanser for oily skin."
       },
 
@@ -638,7 +510,7 @@
         name: "Ceramide & Hyaluronic Acid Moisturizing Cream",
         type: "Moisturiser",
         image: "",
-        concerns: ["dry","redness"],
+        concerns: ["dry", "redness"],
         note: "Barrier-support moisturiser."
       },
 
@@ -648,7 +520,7 @@
         name: "Glow+ Dewy Sunscreen SPF 50",
         type: "Sunscreen",
         image: "",
-        concerns: ["dull","dry"],
+        concerns: ["dull", "dry"],
         note: "Dewy-finish sunscreen."
       }
 
@@ -658,10 +530,10 @@
     let selectedType = "All";
 
 
+    // CREATE PRODUCT CARD
     function createCard(product) {
 
       let imageHTML = "";
-
 
       if (product.image) {
 
@@ -669,7 +541,11 @@
           <img
             src="${product.image}"
             alt="${product.brand} ${product.name}"
-            onerror="this.style.display='none'; this.parentElement.querySelector('.no-image').style.display='block';"
+            loading="lazy"
+            onerror="
+              this.style.display='none';
+              this.parentElement.querySelector('.no-image').style.display='block';
+            "
           >
         `;
 
@@ -689,13 +565,9 @@
               style="display:${product.image ? "none" : "block"}"
             >
 
-              <strong>
-                ${product.brand}
-              </strong>
+              <strong>${product.brand}</strong>
 
-              <span>
-                ${product.type}
-              </span>
+              <span>${product.type}</span>
 
             </div>
 
@@ -733,107 +605,89 @@
     }
 
 
+    // RENDER PRODUCTS
     function renderProducts() {
 
-      const grid =
-        document.getElementById("brandGrid");
+      const grid = document.getElementById("brandGrid");
 
-
-      const search =
-        document
-          .getElementById("brandSearch")
-          .value
-          .toLowerCase()
-          .trim();
-
+      const search = document
+        .getElementById("brandSearch")
+        .value
+        .toLowerCase()
+        .trim();
 
       const origin =
         document.getElementById("brandOrigin").value;
-
 
       const concern =
         document.getElementById("brandConcern").value;
 
 
-      const filtered =
-        products.filter(product => {
+      const filtered = products.filter(product => {
 
-          const searchText = (
-
-            product.brand +
-            " " +
-            product.name +
-            " " +
-            product.type +
-            " " +
-            product.origin
-
-          ).toLowerCase();
+        const searchText = (
+          product.brand +
+          " " +
+          product.name +
+          " " +
+          product.type +
+          " " +
+          product.origin
+        ).toLowerCase();
 
 
-          const matchesSearch =
-            !search ||
-            searchText.includes(search);
+        const matchesSearch =
+          !search ||
+          searchText.includes(search);
 
 
-          const matchesOrigin =
-            origin === "All" ||
-            product.origin === origin;
+        const matchesOrigin =
+          origin === "All" ||
+          product.origin === origin;
 
 
-          const matchesConcern =
-            concern === "All" ||
-            product.concerns.includes(concern);
+        const matchesConcern =
+          concern === "All" ||
+          product.concerns.includes(concern);
 
 
-          const matchesType =
-            selectedType === "All" ||
-            product.type === selectedType;
+        const matchesType =
+          selectedType === "All" ||
+          product.type === selectedType;
 
 
-          return (
-            matchesSearch &&
-            matchesOrigin &&
-            matchesConcern &&
-            matchesType
-          );
+        return (
+          matchesSearch &&
+          matchesOrigin &&
+          matchesConcern &&
+          matchesType
+        );
 
-        });
+      });
 
 
       if (!filtered.length) {
 
         grid.innerHTML = `
-
           <div class="empty-result">
-
-            <h2>
-              No products found
-            </h2>
-
+            <h2>No products found</h2>
             <p>
               Try changing your search or filters.
             </p>
-
           </div>
-
         `;
 
         return;
-
       }
 
 
       grid.innerHTML =
-        filtered
-          .map(createCard)
-          .join("");
+        filtered.map(createCard).join("");
 
     }
 
 
-    /* Search */
-
+    // SEARCH
     document
       .getElementById("brandSearch")
       .addEventListener(
@@ -842,8 +696,7 @@
       );
 
 
-    /* Origin */
-
+    // ORIGIN
     document
       .getElementById("brandOrigin")
       .addEventListener(
@@ -852,8 +705,7 @@
       );
 
 
-    /* Concern */
-
+    // CONCERN
     document
       .getElementById("brandConcern")
       .addEventListener(
@@ -862,8 +714,7 @@
       );
 
 
-    /* Type buttons */
-
+    // TYPE BUTTONS
     document
       .querySelectorAll(".brand-type-btn")
       .forEach(button => {
@@ -878,13 +729,10 @@
                 btn.classList.remove("active")
               );
 
-
             button.classList.add("active");
-
 
             selectedType =
               button.dataset.type;
-
 
             renderProducts();
 
@@ -894,18 +742,15 @@
       });
 
 
-    /* Initial render */
-
+    // INITIAL RENDER
     renderProducts();
 
 
-    /* User name */
-
+    // LOAD USER NAME
     async function loadUser() {
 
       const navName =
         document.getElementById("navName");
-
 
       try {
 
@@ -914,15 +759,12 @@
             credentials: "include"
           });
 
-
         if (!response.ok) {
           return;
         }
 
-
         const data =
           await response.json();
-
 
         if (data.user) {
 
@@ -945,8 +787,7 @@
     loadUser();
 
 
-    /* Logout */
-
+    // LOGOUT
     async function logout() {
 
       try {
@@ -964,7 +805,6 @@
         console.log(error);
 
       }
-
 
       window.location.href =
         "index.html";
